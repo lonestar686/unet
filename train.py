@@ -24,7 +24,7 @@ class myUnet(object):
 	def load_data(self):
 
 		mydata = dataProcess(self.img_rows, self.img_cols)
-		imgs_train, imgs_mask_train = mydata.load_train_data()
+		imgs_train, imgs_mask_train = mydata.load_train_data()                                            
 		imgs_test = mydata.load_test_data()
 		return imgs_train, imgs_mask_train, imgs_test
 
