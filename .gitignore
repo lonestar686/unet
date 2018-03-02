@@ -1,2 +1,5 @@
 *.pyc
 *.hdf5
+results/*
+deform/*
+model/*
