@@ -1,6 +1,7 @@
 
 from keras.models import Model
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Dropout
+from keras.layers import BatchNormalization, Activation
 from keras.layers.merge import concatenate
 from keras.optimizers import Adam
 
@@ -13,36 +14,66 @@ def get_net(img_rows, img_cols, nchs=1):
     #
     inputs = Input((img_rows, img_cols, nchs))
     
-    conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
-    print("conv1 shape:",conv1.shape)
-    conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
-    print("conv1 shape:",conv1.shape)
+# first convolution
+    conv1 = Conv2D(64, 3, padding = 'same', kernel_initializer = 'he_normal')(inputs)
+    conv1 = BatchNormalization()(conv1)
+    conv1 = Activation('relu')(conv1)
+    #
+    conv1 = Conv2D(64, 3, padding = 'same', kernel_initializer = 'he_normal')(conv1)
+    conv1 = BatchNormalization()(conv1)
+    conv1 = Activation('relu')(conv1)
+    #
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
     print("pool1 shape:",pool1.shape)
 
-    conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
-    print("conv2 shape:",conv2.shape)
-    conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
-    print("conv2 shape:",conv2.shape)
+# second convolution
+    conv2 = Conv2D(128, 3, padding = 'same', kernel_initializer = 'he_normal')(pool1)
+    conv2 = BatchNormalization()(conv2)
+    conv2 = Activation('relu')(conv2)
+    #
+    conv2 = Conv2D(128, 3, padding = 'same', kernel_initializer = 'he_normal')(conv2)
+    conv2 = BatchNormalization()(conv2)
+    conv2 = Activation('relu')(conv2)
+    #
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
     print("pool2 shape:",pool2.shape)
 
-    conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
-    print("conv3 shape:",conv3.shape)
-    conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
-    print("conv3 shape:",conv3.shape)
+# third convolution
+    conv3 = Conv2D(256, 3, padding = 'same', kernel_initializer = 'he_normal')(pool2)
+    conv3 = BatchNormalization()(conv3)
+    conv3 = Activation('relu')(conv3)
+    #
+    conv3 = Conv2D(256, 3, padding = 'same', kernel_initializer = 'he_normal')(conv3)
+    conv3 = BatchNormalization()(conv3)
+    conv3 = Activation('relu')(conv3)
+    #
     pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
     print("pool3 shape:",pool3.shape)
 
-    conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
-    conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
+# fourth convolution
+    conv4 = Conv2D(512, 3, padding = 'same', kernel_initializer = 'he_normal')(pool3)
+    conv4 = BatchNormalization()(conv4)
+    conv4 = Activation('relu')(conv4)
+    #    
+    conv4 = Conv2D(512, 3, padding = 'same', kernel_initializer = 'he_normal')(conv4)
+    conv4 = BatchNormalization()(conv4)
+    conv4 = Activation('relu')(conv4)
+    #
     drop4 = Dropout(0.5)(conv4)
     pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
 
-    conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
-    conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
+# fifth convolution
+    conv5 = Conv2D(1024, 3, padding = 'same', kernel_initializer = 'he_normal')(pool4)
+    conv5 = BatchNormalization()(conv5)
+    conv5 = Activation('relu')(conv5)
+    #
+    conv5 = Conv2D(1024, 3, padding = 'same', kernel_initializer = 'he_normal')(conv5)
+    conv5 = BatchNormalization()(conv5)
+    conv5 = Activation('relu')(conv5)
+
     drop5 = Dropout(0.5)(conv5)
 
+# upward
     up6 = Conv2D(512, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
     merge6 = concatenate([drop4,up6], axis = 3)
     conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
@@ -63,6 +94,7 @@ def get_net(img_rows, img_cols, nchs=1):
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+#
     conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
     model = Model(inputs = inputs, outputs = conv10)

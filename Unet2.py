@@ -8,6 +8,8 @@ def get_net(img_rows, img_cols, nchs=1):
     """ Unet,
         Kaggle ultrasound nerve segmentation competition, using keras
     """
+    print("using net {}".format(__name__))
+    #
     inputs = Input((img_rows, img_cols, nchs))
 
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(inputs)
