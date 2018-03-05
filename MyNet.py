@@ -17,10 +17,17 @@ from keras.preprocessing.image import array_to_img
 #net=Unet2.get_net
 
 # Unet3
-import Unet3
-net=Unet3.get_net
+#import Unet3
+#net=Unet3.get_net
 
+# linknet
+import linknet
+net=linknet.LinkNet
 
+#
+n_epochs = 5000
+
+#
 class myNet(object):
 
 	def __init__(self, img_rows = 512, img_cols = 512, out_dir='./results', model_dir='./model'):
@@ -60,7 +67,7 @@ class myNet(object):
 		model_checkpoint = ModelCheckpoint(self.model_name(), monitor='loss',\
                                            verbose=1, save_best_only=True)
 		print('Fitting model...')
-		model.fit(imgs_train, imgs_mask_train, batch_size=8, epochs=50, \
+		model.fit(imgs_train, imgs_mask_train, batch_size=8, epochs=n_epochs, \
 		          verbose=1,validation_split=0.2, shuffle=True, callbacks=[model_checkpoint])
 		#
 		self.predict(model)
