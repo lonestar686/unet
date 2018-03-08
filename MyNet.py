@@ -7,25 +7,29 @@ from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 
 from data import dataProcess
 from keras.preprocessing.image import array_to_img
+from keras.optimizers import Adam
+
+#
+from CustomLosses import gumble_loss
 
 # Unet
 #import Unet
 #net=Unet.get_net
 
 # Unet2
-#import Unet2
-#net=Unet2.get_net
+import Unet2
+net=Unet2.get_net
 
 # Unet3
 #import Unet3
 #net=Unet3.get_net
 
 # linknet
-import linknet
-net=linknet.LinkNet
+#import linknet
+#net=linknet.LinkNet
 
 #
-n_epochs = 5000
+n_epochs = 10
 
 #
 class myNet(object):
@@ -62,7 +66,13 @@ class myNet(object):
 
 		model = self.get_net()
 		print("got net")
+		#
+		model.summary()
         
+		# for training
+		model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    	#model.compile(optimizer = Adam(lr = 1e-4), loss = gumble_loss, metrics = ['accuracy'])
+
         #
 		model_checkpoint = ModelCheckpoint(self.model_name(), monitor='loss',\
                                            verbose=1, save_best_only=True)

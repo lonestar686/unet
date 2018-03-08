@@ -8,7 +8,6 @@ from keras.layers import Input, Conv2D
 from keras.layers import MaxPooling2D, Activation, UpSampling2D, BatchNormalization
 from keras.layers import concatenate, add
 from keras.layers.core import Flatten, Reshape
-from keras.optimizers import Adam
 from keras.models import Model
 from keras.regularizers import l2
 import keras.backend as K
@@ -102,17 +101,17 @@ def LinkNet(img_rows, img_cols, nchs=1, classes=1):
 #
     decoder_4 = decoder_block(input_tensor=encoder_4, m=512, n=256)
 
-    decoder_3_in = add([decoder_4, encoder_3])
+    decoder_3_in = concatenate([decoder_4, encoder_3]) #add([decoder_4, encoder_3])
     decoder_3_in = Activation('relu')(decoder_3_in)
 
     decoder_3 = decoder_block(input_tensor=decoder_3_in, m=256, n=128)
 
-    decoder_2_in = add([decoder_3, encoder_2])
+    decoder_2_in = concatenate([decoder_3, encoder_2]) #add([decoder_3, encoder_2])
     decoder_2_in = Activation('relu')(decoder_2_in)
 
     decoder_2 = decoder_block(input_tensor=decoder_2_in, m=128, n=64)
 
-    decoder_1_in = add([decoder_2, encoder_1])
+    decoder_1_in = concatenate([decoder_2, encoder_1]) #add([decoder_2, encoder_1])
     decoder_1_in = Activation('relu')(decoder_1_in)
 
     decoder_1 = decoder_block(input_tensor=decoder_1_in, m=64, n=64)
@@ -130,11 +129,8 @@ def LinkNet(img_rows, img_cols, nchs=1, classes=1):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters=classes, kernel_size=(2, 2), padding="same")(x)
+    x = Conv2D(filters=classes, kernel_size=(1, 1), padding="same", activation = 'sigmoid')(x)
 
     model = Model(inputs=inputs, outputs=x)
-
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-    #model.compile(optimizer = Adam(lr = 1e-4), loss = gumble_loss, metrics = ['accuracy'])
 
     return model

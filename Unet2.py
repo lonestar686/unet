@@ -1,8 +1,6 @@
 from keras.models import Model
 from keras.layers import Input, Conv2D, MaxPooling2D, Conv2DTranspose, Dropout
 from keras.layers import concatenate
-from keras.optimizers import Adam
-from CustomLosses import gumble_loss
 
 def get_net(img_rows, img_cols, nchs=1):
     """ Unet,
@@ -50,8 +48,5 @@ def get_net(img_rows, img_cols, nchs=1):
     conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
 
     model = Model(inputs=inputs, outputs=conv10)
-
-    #model.compile(optimizer=Adam(lr=1e-4), loss=gumble_loss, metrics=['accuracy'])
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
 
     return model

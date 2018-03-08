@@ -72,7 +72,5 @@ def get_net(img_rows, img_cols, nchs=1):
 
     model = Model(inputs = inputs, outputs = conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-
     return model
 
