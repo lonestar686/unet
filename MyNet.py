@@ -1,9 +1,30 @@
 
-import os
+# importing the libraries
+#import numpy as np
+#import tensorflow as tf
+#import random as rn
+
+#import os
+#os.environ['PYTHONHASHSEED'] = '0'
+
+#from keras import backend as k
+
+# Running the below code every time
+#np.random.seed(27)
+#rn.seed(27)
+#tf.set_random_seed(27)
+
+#sess = tf.Session(graph=tf.get_default_graph())
+#k.set_session(sess)
+
+
+# pick cpu/gpu
+import os 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 #
 import numpy as np
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 
 from data import dataProcess
 from keras.preprocessing.image import array_to_img
@@ -14,22 +35,23 @@ from CustomLosses import gumble_loss
 
 # Unet
 #import Unet
-#net=Unet.get_net
+#net=Unet.Net
 
 # Unet2
-import Unet2
-net=Unet2.get_net
+#import Unet_kaggle
+#net=Unet_kaggle.Net
 
 # Unet3
-#import Unet3
-#net=Unet3.get_net
+import Unet_bn
+net=Unet_bn.Net
 
 # linknet
-#import linknet
-#net=linknet.LinkNet
+#import Linknet
+#net=Linknet.Net
 
 #
-n_epochs = 10
+n_epochs = 100
+n_bsize = 2
 
 #
 class myNet(object):
@@ -42,6 +64,7 @@ class myNet(object):
 		# directories
 		self.out_dir = out_dir
 		self.model_dir = model_dir
+#
 		if not os.path.exists(out_dir):
 			os.mkdir(out_dir)
 		if not os.path.exists(model_dir):
@@ -70,15 +93,17 @@ class myNet(object):
 		model.summary()
         
 		# for training
-		model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-    	#model.compile(optimizer = Adam(lr = 1e-4), loss = gumble_loss, metrics = ['accuracy'])
+		#model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+		model.compile(optimizer = Adam(lr = 1e-4), loss = gumble_loss, metrics = ['accuracy'])
 
         #
 		model_checkpoint = ModelCheckpoint(self.model_name(), monitor='loss',\
                                            verbose=1, save_best_only=True)
+		reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.9, \
+                              patience=5, min_lr=1e-5, verbose=1)
 		print('Fitting model...')
-		model.fit(imgs_train, imgs_mask_train, batch_size=8, epochs=n_epochs, \
-		          verbose=1,validation_split=0.2, shuffle=True, callbacks=[model_checkpoint])
+		model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
+		          verbose=1,validation_split=0.2, shuffle=True, callbacks=[model_checkpoint, reduce_lr])
 		#
 		self.predict(model)
 

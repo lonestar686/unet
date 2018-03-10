@@ -3,13 +3,15 @@ from keras.models import Model
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Dropout
 from keras.layers.merge import concatenate
 
-def get_net(img_rows, img_cols, nchs=1):
+def Net(img_rows, img_cols, nchs=1):
     """ Unet
     """
     print("using net {}".format(__name__))
-    #
+
+#
     inputs = Input((img_rows, img_cols, nchs))
     
+#
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
     print("conv1 shape:",conv1.shape)
     conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
@@ -40,6 +42,7 @@ def get_net(img_rows, img_cols, nchs=1):
     conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
     drop5 = Dropout(0.5)(conv5)
 
+#
     up6 = Conv2D(512, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
     merge6 = concatenate([drop4,up6], axis = 3)
     conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
@@ -62,6 +65,7 @@ def get_net(img_rows, img_cols, nchs=1):
     conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
+#
     model = Model(inputs = inputs, outputs = conv10)
 
     return model

@@ -12,8 +12,10 @@ from keras.models import Model
 from keras.regularizers import l2
 import keras.backend as K
 
+#
 def _shortcut(input, residual):
-    """Adds a shortcut between input and residual block and merges them with "sum"
+    """Adds a shortcut between input and residual block and 
+       merges them with "sum" 
     """
     # Expand channels of shortcut to match residual.
     # Stride appropriately to match residual (width, height)
@@ -37,6 +39,8 @@ def _shortcut(input, residual):
     return add([shortcut, residual])
 
 def encoder_block(input_tensor, m, n):
+    """ residual block
+    """
     x = BatchNormalization()(input_tensor)
     x = Activation('relu')(x)
     x = Conv2D(filters=n, kernel_size=(3, 3), strides=(2, 2), padding="same")(x)
@@ -60,6 +64,8 @@ def encoder_block(input_tensor, m, n):
     return added_2
 
 def decoder_block(input_tensor, m, n):
+    """ upsampling
+    """
     x = BatchNormalization()(input_tensor)
     x = Activation('relu')(x)
     x = Conv2D(filters=int(m/4), kernel_size=(1, 1))(x)
@@ -75,21 +81,25 @@ def decoder_block(input_tensor, m, n):
 
     return x
 
-def LinkNet(img_rows, img_cols, nchs=1, classes=1):
-
+def Net(img_rows, img_cols, nchs=1, nclasses=1):
+    """ linknet
+    """
     #
     print("using net {}".format(__name__))
 
+#
     input_shape=(img_rows, img_cols, nchs)   # (256, 256, 3)
-    #
-    inputs = Input(shape=input_shape)
 
+#
+    inputs = Input(shape=input_shape)
+#
     x = Conv2D(filters=64, kernel_size=(7, 7), strides=(2, 2), padding="same")(inputs)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
     x = MaxPooling2D((3, 3), strides=(2, 2), padding="same")(x)
 
+#
     encoder_1 = encoder_block(input_tensor=x, m=64, n=64)
 
     encoder_2 = encoder_block(input_tensor=encoder_1, m=64, n=128)
@@ -129,8 +139,11 @@ def LinkNet(img_rows, img_cols, nchs=1, classes=1):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
-    x = Conv2D(filters=classes, kernel_size=(1, 1), padding="same", activation = 'sigmoid')(x)
+    x = Conv2D(filters=nclasses, kernel_size=(1, 1), padding="same")(x)
 
+    x = Activation('sigmoid')(x)
+
+#
     model = Model(inputs=inputs, outputs=x)
 
     return model

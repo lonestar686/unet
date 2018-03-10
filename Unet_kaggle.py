@@ -2,14 +2,16 @@ from keras.models import Model
 from keras.layers import Input, Conv2D, MaxPooling2D, Conv2DTranspose, Dropout
 from keras.layers import concatenate
 
-def get_net(img_rows, img_cols, nchs=1):
+def Net(img_rows, img_cols, nchs=1):
     """ Unet,
         Kaggle ultrasound nerve segmentation competition, using keras
     """
+    
     print("using net {}".format(__name__))
-    #
-    inputs = Input((img_rows, img_cols, nchs))
 
+#
+    inputs = Input((img_rows, img_cols, nchs))
+#
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(inputs)
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
@@ -29,6 +31,7 @@ def get_net(img_rows, img_cols, nchs=1):
     conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(pool4)
     conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(conv5)
 
+#
     up6 = concatenate([Conv2DTranspose(256, (2, 2), strides=(2, 2), padding='same', kernel_initializer = 'he_normal')(conv5), conv4], axis=3)
     conv6 = Conv2D(256, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(up6)
     conv6 = Conv2D(256, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(conv6)
@@ -45,6 +48,7 @@ def get_net(img_rows, img_cols, nchs=1):
     conv9 = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(up9)
     conv9 = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_initializer = 'he_normal')(conv9)
 
+#
     conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
 
     model = Model(inputs=inputs, outputs=conv10)

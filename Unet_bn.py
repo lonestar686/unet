@@ -4,11 +4,12 @@ from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Dropout
 from keras.layers import BatchNormalization, Activation
 from keras.layers.merge import concatenate
 
-def get_net(img_rows, img_cols, nchs=1):
-    """ Unet
+def Net(img_rows, img_cols, nchs=1):
+    """ Unet with batch normalization
     """
     print("using net {}".format(__name__))
-    #
+
+#
     inputs = Input((img_rows, img_cols, nchs))
     
 # first convolution
@@ -91,6 +92,7 @@ def get_net(img_rows, img_cols, nchs=1):
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+
 #
     conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
