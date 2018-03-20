@@ -1,3 +1,5 @@
+
+# get the codes from https://www.kaggle.com/bguberfain/elastic-transform-for-data-augmentation/notebook
 # Import stuff
 import numpy as np
 import pandas as pd
