@@ -31,7 +31,19 @@ def elastic_transform(image, alpha, sigma, alpha_affine, random_state=None):
     pts2 = pts1 + random_state.uniform(-alpha_affine, alpha_affine, size=pts1.shape).astype(np.float32)
     M = cv2.getAffineTransform(pts1, pts2)
     image = cv2.warpAffine(image, M, shape_size[::-1], borderMode=cv2.BORDER_REFLECT_101)
-
+    
+    #Comment from Rangel Dokov:
+    #You should be able to get a faster version by just using more OpenCV functions instead of SciPy. 
+    #I managed to get about 4x improvement by using:
+    # include 4 standard deviations in the kernel (the default for ndimage.gaussian_filter)
+    # OpenCV also requires an odd size for the kernel hence the "| 1" part
+    #blur_size = int(4*sigma) | 1
+    #cv2.GaussianBlur(image, ksize=(blur_size, blur_size), sigmaX=sigma)
+    #instead of 
+    #ndimage.gaussian_filter(image, sigma)
+    #and cv2.remap(image, dx, dy, interpolation=cv2.INTER_LINEAR) instead of 
+    #ndimage.map_coordinates(image, (dx, dy), order=1)
+    
     dx = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
     dy = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
     dz = np.zeros_like(dx)
