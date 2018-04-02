@@ -76,10 +76,6 @@ net=Unet_kaggle.Net
 #net=Linknet.Net
 
 #
-n_epochs = 50
-n_bsize = 2
-
-#
 class myNet(object):
 
 	def __init__(self, img_rows = 512, img_cols = 512, out_dir='./results', model_dir='./model'):
@@ -107,7 +103,7 @@ class myNet(object):
 
 		return net(self.img_rows, self.img_cols)
 
-	def train_and_predict(self):
+	def train_and_predict(self, n_epochs, n_bsize):
 
 		print("loading data")
 		imgs_train, imgs_mask_train = self.load_train_data()
