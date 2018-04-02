@@ -1,22 +1,47 @@
 
-# importing the libraries
-#import numpy as np
-#import tensorflow as tf
-#import random as rn
+import numpy as np
+import tensorflow as tf
+import random as rn
 
-#import os
-#os.environ['PYTHONHASHSEED'] = '0'
+# The below is necessary in Python 3.2.3 onwards to
+# have reproducible behavior for certain hash-based operations.
+# See these references for further details:
+# https://docs.python.org/3.4/using/cmdline.html#envvar-PYTHONHASHSEED
+# https://github.com/keras-team/keras/issues/2280#issuecomment-306959926
 
-#from keras import backend as k
+import os
+os.environ['PYTHONHASHSEED'] = '0'
 
-# Running the below code every time
-#np.random.seed(27)
-#rn.seed(27)
-#tf.set_random_seed(27)
+# The below is necessary for starting Numpy generated random numbers
+# in a well-defined initial state.
 
-#sess = tf.Session(graph=tf.get_default_graph())
-#k.set_session(sess)
+np.random.seed(42)
 
+# The below is necessary for starting core Python generated random numbers
+# in a well-defined state.
+
+rn.seed(12345)
+
+# Force TensorFlow to use single thread.
+# Multiple threads are a potential source of
+# non-reproducible results.
+# For further details, see: 
+# https://stackoverflow.com/questions/42022950/which-seeds-have-to-be-set-where-to-realize-100-reproducibility-of-training-res
+
+session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
+
+from keras import backend as K
+
+# The below tf.set_random_seed() will make random number generation
+# in the TensorFlow backend have a well-defined initial state.
+# For further details, see: https://www.tensorflow.org/api_docs/python/tf/set_random_seed
+
+tf.set_random_seed(1234)
+
+sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
+K.set_session(sess)
+
+# ---------------------------
 
 # pick cpu/gpu
 import os 
@@ -25,32 +50,33 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 #
 import numpy as np
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
-
-from data import dataProcess
 from keras.preprocessing.image import array_to_img
 from keras.optimizers import Adam
 
 #
-from CustomLosses import gumble_loss
+from dataprep.data import dataProcess
+
+#
+from nets.CustomLosses import gumble_loss
 
 # Unet
-#import Unet
+#from nets import Unet
 #net=Unet.Net
 
 # Unet2
-#import Unet_kaggle
-#net=Unet_kaggle.Net
+from nets import Unet_kaggle
+net=Unet_kaggle.Net
 
 # Unet3
-import Unet_bn
-net=Unet_bn.Net
+#from nets import Unet_bn
+#net=Unet_bn.Net
 
 # linknet
-#import Linknet
+#from nets import Linknet
 #net=Linknet.Net
 
 #
-n_epochs = 100
+n_epochs = 50
 n_bsize = 2
 
 #
@@ -100,10 +126,11 @@ class myNet(object):
 		model_checkpoint = ModelCheckpoint(self.model_name(), monitor='loss',\
                                            verbose=1, save_best_only=True)
 		reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.9, \
-                              patience=5, min_lr=1e-5, verbose=1)
+                              patience=20, min_lr=1e-6, verbose=1)
 		print('Fitting model...')
 		model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
-		          verbose=1,validation_split=0.2, shuffle=True, callbacks=[model_checkpoint, reduce_lr])
+		          verbose=1,validation_split=0.2, shuffle=True, \
+				  callbacks=[model_checkpoint, reduce_lr])
 		#
 		self.predict(model)
 

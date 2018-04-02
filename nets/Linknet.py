@@ -111,17 +111,20 @@ def Net(img_rows, img_cols, nchs=1, nclasses=1):
 #
     decoder_4 = decoder_block(input_tensor=encoder_4, m=512, n=256)
 
-    decoder_3_in = concatenate([decoder_4, encoder_3]) #add([decoder_4, encoder_3])
+    #decoder_3_in = concatenate([decoder_4, encoder_3])
+    decoder_3_in = add([decoder_4, encoder_3])
     decoder_3_in = Activation('relu')(decoder_3_in)
 
     decoder_3 = decoder_block(input_tensor=decoder_3_in, m=256, n=128)
 
-    decoder_2_in = concatenate([decoder_3, encoder_2]) #add([decoder_3, encoder_2])
+    #decoder_2_in = concatenate([decoder_3, encoder_2])
+    decoder_2_in = add([decoder_3, encoder_2])
     decoder_2_in = Activation('relu')(decoder_2_in)
 
     decoder_2 = decoder_block(input_tensor=decoder_2_in, m=128, n=64)
 
-    decoder_1_in = concatenate([decoder_2, encoder_1]) #add([decoder_2, encoder_1])
+    #decoder_1_in = concatenate([decoder_2, encoder_1])
+    decoder_1_in = add([decoder_2, encoder_1])
     decoder_1_in = Activation('relu')(decoder_1_in)
 
     decoder_1 = decoder_block(input_tensor=decoder_1_in, m=64, n=64)

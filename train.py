@@ -2,7 +2,7 @@
 import time
 
 #
-from MyNet import myNet
+from nets.MyNet import myNet
 
 if __name__ == '__main__':
 	#
