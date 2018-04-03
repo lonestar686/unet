@@ -42,14 +42,8 @@ sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
 K.set_session(sess)
 
 # ---------------------------
-
-# pick cpu/gpu
-import os 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
-#
 import numpy as np
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, TensorBoard
 from keras.preprocessing.image import array_to_img
 from keras.optimizers import Adam
 
@@ -59,29 +53,16 @@ from dataprep.data import dataProcess
 #
 from nets.CustomLosses import gumble_loss
 
-# Unet
-#from nets import Unet
-#net=Unet.Net
-
-# Unet2
-from nets import Unet_kaggle
-net=Unet_kaggle.Net
-
-# Unet3
-#from nets import Unet_bn
-#net=Unet_bn.Net
-
-# linknet
-#from nets import Linknet
-#net=Linknet.Net
-
 #
 class myNet(object):
 
-	def __init__(self, img_rows = 512, img_cols = 512, out_dir='./results', model_dir='./model'):
+	def __init__(self, img_rows = 512, img_cols = 512, img_nchs = 1, nclasses=1, \
+		         out_dir='./results', model_dir='./model'):
 
 		self.img_rows = img_rows
 		self.img_cols = img_cols
+		self.img_nchs = img_nchs
+		self.nclasses=nclasses
 
 		# directories
 		self.out_dir = out_dir
@@ -100,8 +81,8 @@ class myNet(object):
 		return imgs_train, imgs_mask_train
 
 	def get_net(self):
-
-		return net(self.img_rows, self.img_cols)
+		raise Exception("Need implementation.")
+		return None
 
 	def train_and_predict(self, n_epochs, n_bsize):
 
@@ -118,15 +99,21 @@ class myNet(object):
 		#model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
 		model.compile(optimizer = Adam(lr = 1e-4), loss = gumble_loss, metrics = ['accuracy'])
 
-        #
+        # callbacks
 		model_checkpoint = ModelCheckpoint(self.model_name(), monitor='loss',\
                                            verbose=1, save_best_only=True)
 		reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.9, \
                               patience=20, min_lr=1e-6, verbose=1)
+		tensorBoard = TensorBoard(log_dir='./logs', histogram_freq=5, \
+		                          write_graph=True, write_images=True)
 		print('Fitting model...')
+
+		#model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
+		#          verbose=1,validation_split=0.2, shuffle=True, \
+		#		  callbacks=[model_checkpoint, reduce_lr, tensorBoard])
 		model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
-		          verbose=1,validation_split=0.2, shuffle=True, \
-				  callbacks=[model_checkpoint, reduce_lr])
+			verbose=1,validation_split=0.2, shuffle=True, \
+			callbacks=[model_checkpoint, reduce_lr])
 		#
 		self.predict(model)
 

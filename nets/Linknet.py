@@ -12,6 +12,8 @@ from keras.models import Model
 from keras.regularizers import l2
 import keras.backend as K
 
+from nets.MyNet import myNet
+
 #
 def _shortcut(input, residual):
     """Adds a shortcut between input and residual block and 
@@ -81,72 +83,81 @@ def decoder_block(input_tensor, m, n):
 
     return x
 
-def Net(img_rows, img_cols, nchs=1, nclasses=1):
+#
+class Net(myNet):
     """ linknet
     """
+    def __init__(self, img_rows = 512, img_cols = 512, img_nchs = 1, nclasses=1, \
+		         out_dir='./results', model_dir='./model'):
+        super(Net, self).__init__(img_rows, img_cols, img_nchs, nclasses, \
+		                          out_dir, model_dir)
+
+    def get_net(self):
+
+        print("using net {}".format(__name__))
+
+        #
+        input_shape = (self.img_rows, self.img_cols, self.img_nchs)
+        nclasses = self.nclasses
+
+        #
+        img_input = Input(shape=input_shape)
+
     #
-    print("using net {}".format(__name__))
+        x = Conv2D(filters=64, kernel_size=(7, 7), strides=(2, 2), padding="same")(img_input)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
 
-#
-    input_shape=(img_rows, img_cols, nchs)   # (256, 256, 3)
+        x = MaxPooling2D((3, 3), strides=(2, 2), padding="same")(x)
 
-#
-    inputs = Input(shape=input_shape)
-#
-    x = Conv2D(filters=64, kernel_size=(7, 7), strides=(2, 2), padding="same")(inputs)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
+    #
+        encoder_1 = encoder_block(input_tensor=x, m=64, n=64)
 
-    x = MaxPooling2D((3, 3), strides=(2, 2), padding="same")(x)
+        encoder_2 = encoder_block(input_tensor=encoder_1, m=64, n=128)
 
-#
-    encoder_1 = encoder_block(input_tensor=x, m=64, n=64)
+        encoder_3 = encoder_block(input_tensor=encoder_2, m=128, n=256)
 
-    encoder_2 = encoder_block(input_tensor=encoder_1, m=64, n=128)
+        encoder_4 = encoder_block(input_tensor=encoder_3, m=256, n=512)
 
-    encoder_3 = encoder_block(input_tensor=encoder_2, m=128, n=256)
+    #
+        decoder_4 = decoder_block(input_tensor=encoder_4, m=512, n=256)
 
-    encoder_4 = encoder_block(input_tensor=encoder_3, m=256, n=512)
+        #decoder_3_in = concatenate([decoder_4, encoder_3])
+        decoder_3_in = add([decoder_4, encoder_3])
+        decoder_3_in = Activation('relu')(decoder_3_in)
 
-#
-    decoder_4 = decoder_block(input_tensor=encoder_4, m=512, n=256)
+        decoder_3 = decoder_block(input_tensor=decoder_3_in, m=256, n=128)
 
-    #decoder_3_in = concatenate([decoder_4, encoder_3])
-    decoder_3_in = add([decoder_4, encoder_3])
-    decoder_3_in = Activation('relu')(decoder_3_in)
+        #decoder_2_in = concatenate([decoder_3, encoder_2])
+        decoder_2_in = add([decoder_3, encoder_2])
+        decoder_2_in = Activation('relu')(decoder_2_in)
 
-    decoder_3 = decoder_block(input_tensor=decoder_3_in, m=256, n=128)
+        decoder_2 = decoder_block(input_tensor=decoder_2_in, m=128, n=64)
 
-    #decoder_2_in = concatenate([decoder_3, encoder_2])
-    decoder_2_in = add([decoder_3, encoder_2])
-    decoder_2_in = Activation('relu')(decoder_2_in)
+        #decoder_1_in = concatenate([decoder_2, encoder_1])
+        decoder_1_in = add([decoder_2, encoder_1])
+        decoder_1_in = Activation('relu')(decoder_1_in)
 
-    decoder_2 = decoder_block(input_tensor=decoder_2_in, m=128, n=64)
+        decoder_1 = decoder_block(input_tensor=decoder_1_in, m=64, n=64)
 
-    #decoder_1_in = concatenate([decoder_2, encoder_1])
-    decoder_1_in = add([decoder_2, encoder_1])
-    decoder_1_in = Activation('relu')(decoder_1_in)
+        x = UpSampling2D((2, 2))(decoder_1)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        x = Conv2D(filters=32, kernel_size=(3, 3), padding="same")(x)
 
-    decoder_1 = decoder_block(input_tensor=decoder_1_in, m=64, n=64)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        x = Conv2D(filters=32, kernel_size=(3, 3), padding="same")(x)
 
-    x = UpSampling2D((2, 2))(decoder_1)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Conv2D(filters=32, kernel_size=(3, 3), padding="same")(x)
+        x = UpSampling2D((2, 2))(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
 
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
-    x = Conv2D(filters=32, kernel_size=(3, 3), padding="same")(x)
+        x = Conv2D(filters=nclasses, kernel_size=(1, 1), padding="same")(x)
 
-    x = UpSampling2D((2, 2))(x)
-    x = BatchNormalization()(x)
-    x = Activation('relu')(x)
+        x = Activation('sigmoid')(x)
 
-    x = Conv2D(filters=nclasses, kernel_size=(1, 1), padding="same")(x)
+    #
+        model = Model(inputs=img_input, outputs=x)
 
-    x = Activation('sigmoid')(x)
-
-#
-    model = Model(inputs=inputs, outputs=x)
-
-    return model
+        return model

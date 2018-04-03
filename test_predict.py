@@ -1,5 +1,5 @@
-from train import myNet
+from train import Net
 
-mynet = myNet()
+mynet = Net()
 
 mynet.test()

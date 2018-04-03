@@ -1,8 +1,26 @@
 
 import time
 import argparse
-#
-from nets.MyNet import myNet
+
+# pick cpu/gpu
+import os 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"    # GPU
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"    # CPU
+
+# Unet
+#from nets.Unet import Net
+
+# Unet2
+from nets.Unet_kaggle import Net
+
+# Unet3
+#from nets.Unet_bn import Net
+
+# linknet
+#from nets.Linknet import Net
+
+# Tiramisu
+#from nets.Tiramisu import Net
 
 if __name__ == '__main__':
 	# get the parameters
@@ -13,6 +31,6 @@ if __name__ == '__main__':
 
 	#
 	print('start time: {}'.format(time.ctime()))
-	mynet = myNet()
+	mynet = Net()
 	mynet.train_and_predict(n_epochs=args.niters, n_bsize=args.batches)
 	print("end time: {}".format(time.ctime()))
