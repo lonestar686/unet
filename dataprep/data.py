@@ -2,6 +2,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 import numpy as np 
 import os
 import glob
+from skimage.transform import resize
 #import cv2
 #from libtiff import TIFF
 
@@ -229,6 +230,26 @@ class dataProcess(object):
 		#mean = imgs_test.mean(axis = 0)
 		#imgs_test -= mean	
 		return imgs_test
+
+	def resize(self, imgs, new_rows, new_cols):
+		""" preprocess data
+		"""
+		imgs_p = np.ndarray((imgs.shape[0], new_rows, new_cols), dtype=np.uint8)
+		for i in range(imgs.shape[0]):
+			imgs_p[i] = resize(imgs[i], (new_cols, new_rows), preserve_range=True)
+
+		return imgs_p
+
+	def preprocess(self, imgs_p):
+		""" balance images
+		"""
+		imgs_p = imgs_p.astype('float32')
+		imgs_p /= 255
+		#mean = np.mean(imgs_p)
+		#std  = np.std(imgs_p)
+		#imgs_p -= mean
+		#imgs_p /= std	
+		return imgs_p
 
 if __name__ == "__main__":
 
