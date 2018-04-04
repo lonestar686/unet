@@ -51,7 +51,8 @@ from keras.optimizers import Adam
 from dataprep.data import dataProcess
 
 #
-from nets.CustomLosses import gumble_loss
+from nets.CustomLosses import gumble_loss, dice_loss
+from nets.CustomLosses import dice_coef as dice
 
 #
 class myNet(object):
@@ -97,7 +98,8 @@ class myNet(object):
         
 		# for training
 		#model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-		model.compile(optimizer = Adam(lr = 1e-4), loss = gumble_loss, metrics = ['accuracy'])
+		model.compile(optimizer = Adam(lr = 1e-4), loss = gumble_loss, metrics = ['accuracy', dice])
+		#model.compile(optimizer = Adam(lr = 1e-4), loss = dice_loss, metrics = ['accuracy', dice])
 
         # callbacks
 		model_checkpoint = ModelCheckpoint(self.model_name(), monitor='loss',\
