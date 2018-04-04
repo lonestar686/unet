@@ -6,13 +6,13 @@ from keras.layers.merge import concatenate
 
 from nets.MyNet import myNet
 
-class Net(myNet):
+class Unet_BN(myNet):
     """ Unet with batch normalization
     """
     def __init__(self, img_rows = 512, img_cols = 512, img_nchs = 1, nclasses=1, \
-		         out_dir='./results', model_dir='./model'):
-        super(Net, self).__init__(img_rows, img_cols, img_nchs, nclasses, \
-		                          out_dir, model_dir)
+		         out_dir='./results', model_dir='./model', **kwargs):
+        super(Unet_BN, self).__init__(img_rows, img_cols, img_nchs, nclasses, \
+		                          out_dir, model_dir, **kwargs)
 
     def get_net(self):
 

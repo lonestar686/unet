@@ -84,13 +84,13 @@ def decoder_block(input_tensor, m, n):
     return x
 
 #
-class Net(myNet):
+class Linknet(myNet):
     """ linknet
     """
     def __init__(self, img_rows = 512, img_cols = 512, img_nchs = 1, nclasses=1, \
-		         out_dir='./results', model_dir='./model'):
-        super(Net, self).__init__(img_rows, img_cols, img_nchs, nclasses, \
-		                          out_dir, model_dir)
+		         out_dir='./results', model_dir='./model', **kwargs):
+        super(Linknet, self).__init__(img_rows, img_cols, img_nchs, nclasses, \
+		                          out_dir, model_dir, **kwargs)
 
     def get_net(self):
 

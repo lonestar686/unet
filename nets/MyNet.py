@@ -57,7 +57,7 @@ from nets.CustomLosses import gumble_loss
 class myNet(object):
 
 	def __init__(self, img_rows = 512, img_cols = 512, img_nchs = 1, nclasses=1, \
-		         out_dir='./results', model_dir='./model'):
+		         out_dir='./results', model_dir='./model', **kwargs):
 
 		self.img_rows = img_rows
 		self.img_cols = img_cols

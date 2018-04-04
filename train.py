@@ -8,19 +8,19 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"    # GPU
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"    # CPU
 
 # Unet
-#from nets.Unet import Net
+#from nets.Unet import Unet as Net
 
 # Unet2
-from nets.Unet_kaggle import Net
+from nets.Unet_kaggle import Unet_Kaggle as Net
 
 # Unet3
-#from nets.Unet_bn import Net
+#from nets.Unet_bn import Unet_BN as Net
 
 # linknet
-#from nets.Linknet import Net
+#from nets.Linknet import Linknet as Net
 
 # Tiramisu
-#from nets.Tiramisu import Net
+#from nets.Tiramisu import Tiramisu as Net
 
 if __name__ == '__main__':
 	# get the parameters
@@ -31,6 +31,6 @@ if __name__ == '__main__':
 
 	#
 	print('start time: {}'.format(time.ctime()))
-	mynet = Net()
+	mynet = Net(growth_rate=8, nb_filter=48, nb_layers_per_block=2)
 	mynet.train_and_predict(n_epochs=args.niters, n_bsize=args.batches)
 	print("end time: {}".format(time.ctime()))

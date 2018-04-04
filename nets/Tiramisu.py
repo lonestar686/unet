@@ -79,14 +79,14 @@ def up_path(added, skips, nb_layers, growth_rate, p, wd):
     return x
 
 #
-class Net(myNet):
+class Tiramisu(myNet):
     """ tiramisu net
     """
     def __init__(self, img_rows = 512, img_cols = 512, img_nchs = 1, nclasses=1, \
 		         out_dir='./results', model_dir='./model', \
                  nb_dense_block=6, \
                  growth_rate=12, nb_filter=48, nb_layers_per_block=4, \
-                 p=None, wd=0):
+                 p=None, wd=0, **kwargs):
         """
         Arguments:
             nclasses: number of classes
@@ -99,8 +99,8 @@ class Net(myNet):
             p: dropout rate
             wd: weight decay
         """
-        super(Net, self).__init__(img_rows, img_cols, img_nchs, nclasses, \
-		                          out_dir, model_dir)
+        super(Tiramisu, self).__init__(img_rows, img_cols, img_nchs, nclasses, \
+		                          out_dir, model_dir, **kwargs)
 
         # special parameters for tiramisu net
         self.nb_dense_block=nb_dense_block
@@ -139,11 +139,11 @@ class Net(myNet):
         x = up_path(added, reverse(skips[:-1]), reverse(nb_layers[:-1]), growth_rate, p, wd)
         
         x = conv(x, nclasses, 1, wd, 0)
-        #_,r,c,f = x.get_shape().as_list()
-        #x = Reshape((-1, nclasses))(x)
-        #x = Activation('softmax')(x)
-        x = Activation('sigmoid')(x)
-
+        if nclasses == 1:
+            x = Activation('sigmoid')(x)
+        else:
+            x = Reshape((-1, nclasses))(x)
+            x = Activation('softmax')(x)
 
     #
         model = Model(inputs=img_input, outputs=x)
