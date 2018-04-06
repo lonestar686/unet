@@ -48,7 +48,8 @@ from keras.preprocessing.image import array_to_img
 from keras.optimizers import Adam
 
 #
-from dataprep.data import dataProcess
+from data import dataProcess
+from dataprep.data_process import DataProcess
 
 #
 from nets.CustomLosses import gumble_loss, dice_loss
@@ -77,7 +78,11 @@ class myNet(object):
 	def load_train_data(self):
 
 		mydata = dataProcess(self.img_rows, self.img_cols)
-		imgs_train, imgs_mask_train = mydata.load_train_data()                                            
+		imgs_train, imgs_mask_train = mydata.load_train_data()
+
+		# preprocessing
+		imgs_train = DataProcess.scale(imgs_train)
+		imgs_mask_train = DataProcess.scale(imgs_mask_train, flag_mask=True)
 
 		return imgs_train, imgs_mask_train
 
@@ -85,7 +90,7 @@ class myNet(object):
 		raise Exception("Need implementation.")
 		return None
 
-	def train_and_predict(self, n_epochs, n_bsize):
+	def train_and_predict(self, n_epochs, n_bsize, flag_tensorboard=False):
 
 		print("loading data")
 		imgs_train, imgs_mask_train = self.load_train_data()
@@ -94,7 +99,7 @@ class myNet(object):
 		model = self.get_net()
 		print("got net")
 		#
-		model.summary()
+		#model.summary()
         
 		# for training
 		#model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
@@ -106,16 +111,21 @@ class myNet(object):
                                            verbose=1, save_best_only=True)
 		reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.9, \
                               patience=20, min_lr=1e-6, verbose=1)
-		tensorBoard = TensorBoard(log_dir='./logs', histogram_freq=5, \
-		                          write_graph=True, write_images=True)
-		print('Fitting model...')
 
-		#model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
-		#          verbose=1,validation_split=0.2, shuffle=True, \
-		#		  callbacks=[model_checkpoint, reduce_lr, tensorBoard])
-		model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
-			verbose=1,validation_split=0.2, shuffle=True, \
-			callbacks=[model_checkpoint, reduce_lr])
+		print('Fitting model...')
+		
+		if flag_tensorboard:
+			tensorBoard = TensorBoard(log_dir='./logs', histogram_freq=5, \
+									write_graph=True, write_images=True)
+			model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
+					  verbose=1,validation_split=0.2, shuffle=True, \
+					  callbacks=[model_checkpoint, reduce_lr, tensorBoard])
+		else:
+			model.fit(imgs_train, imgs_mask_train, batch_size=n_bsize, epochs=n_epochs, \
+			          verbose=1,validation_split=0.2, shuffle=True, \
+					  callbacks=[model_checkpoint, reduce_lr])
+
+		print('Predicting...')					
 		#
 		self.predict(model)
 
@@ -126,6 +136,8 @@ class myNet(object):
 		# load data
 		mydata    = dataProcess(self.img_rows, self.img_cols)
 		imgs_test = mydata.load_test_data()
+		# preprocess
+		imgs_test = DataProcess.scale(imgs_test)
 
 		print('predict test data')
 		imgs_mask_test = model.predict(imgs_test, batch_size=1, verbose=1)
